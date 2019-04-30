@@ -141,6 +141,23 @@ func (c *Client) GetVmRefByName(vmName string) (vmr *VmRef, err error) {
 	return nil, errors.New(fmt.Sprintf("Vm '%s' not found", vmName))
 }
 
+func (c *Client) CheckVmID(vmID int) (b bool, err error) {
+	// CheckVMID returns true if the VM exists
+	var data map[string]interface{}
+	var url string
+	url = fmt.Sprintf("/cluster/nextid?vmid=%d", vmID)
+
+	_, err = c.session.GetJSON(url, nil, nil, &data)
+	if err != nil {
+		return false, err
+	}
+	if data["data"] == nil || data["errors"] != nil {
+		return true, nil
+	}
+
+	return false, fmt.Errorf("Vm '%ds' not found", vmID)
+}
+
 func (c *Client) GetVmState(vmr *VmRef) (vmState map[string]interface{}, err error) {
 	err = c.CheckVmRef(vmr)
 	if err != nil {
